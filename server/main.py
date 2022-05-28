@@ -5,7 +5,7 @@ import pytest
 import alt
 
 
-def test_resource(resource: alt.Resource, args: List[str]) -> None:
+def test_resource(args: List[str]) -> None:
     # On Windows we need to add flag --capture=sys, so that pytest doesn't use the file descriptors
     if platform.system() == "Windows":
         if "--capture=fd" in args:
@@ -14,7 +14,6 @@ def test_resource(resource: alt.Resource, args: List[str]) -> None:
             )
         args.insert(0, "--capture=sys")
 
-    args.append(resource.path)
     pytest.main(args)
 
 
@@ -24,12 +23,12 @@ def handle_pytest_command(args: List[str]) -> None:
         resource = alt.Resource.get_by_name(resource_name)
         if resource:
             args.remove(resource_name)
-            test_resource(resource, args)
+            args.append(resource.path)
+            test_resource(args)
             return
 
-    resources = alt.Resource.all
-    for resource in resources:
-        test_resource(resource, args)
+    args.append("resources")
+    test_resource(args)
 
 
 @alt.event(alt.Event.ConsoleCommand)
